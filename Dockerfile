@@ -7,8 +7,8 @@ WORKDIR /usr/src/app
 # Copy everything
 COPY . .
 
-# Install dependencies
-RUN npm install
+# Install dependencies (bypass peer conflict)
+RUN npm install --legacy-peer-deps
 
 # Build the Flowise app
 RUN npm run build
@@ -16,7 +16,7 @@ RUN npm run build
 # Make the run script executable
 RUN chmod +x packages/server/bin/run
 
-# Create missing log directory (this fixes your error)
+# Create missing log directory
 RUN mkdir -p /opt/render/.flowise/logs
 
 # Expose the port

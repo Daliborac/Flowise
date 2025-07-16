@@ -1,38 +1,26 @@
-# Build local monorepo image
-# docker build --no-cache -t  flowise .
+# Use Node 20
+FROM node:20
 
-# Run image
-# docker run -d -p 3000:3000 flowise
+# Create app directory
+WORKDIR /usr/src/app
 
-FROM node:20-alpine
-RUN apk add --update libc6-compat python3 make g++
-# needed for pdfjs-dist
-RUN apk add --no-cache build-base cairo-dev pango-dev
-
-# Install Chromium
-RUN apk add --no-cache chromium
-
-# Install curl for container-level health checks
-# Fixes: https://github.com/FlowiseAI/Flowise/issues/4126
-RUN apk add --no-cache curl
-
-#install PNPM globaly
-RUN npm install -g pnpm
-
-ENV PUPPETEER_SKIP_DOWNLOAD=true
-ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-
-ENV NODE_OPTIONS=--max-old-space-size=8192
-
-WORKDIR /usr/src
-
-# Copy app source
+# Copy everything
 COPY . .
 
-RUN pnpm install
+# Install dependencies
+RUN npm install
 
-RUN pnpm build
+# Build the Flowise app
+RUN npm run build
 
+# Make the run script executable
+RUN chmod +x packages/server/bin/run
+
+# Create missing log directory (this fixes your error)
+RUN mkdir -p /opt/render/.flowise/logs
+
+# Expose the port
 EXPOSE 3000
 
-CMD [ "pnpm", "start" ]
+# Start Flowise
+CMD ["packages/server/bin/run", "start"]

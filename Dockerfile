@@ -1,22 +1,25 @@
 # Use Node 20
 FROM node:20
 
+# Install pnpm globally
+RUN npm install -g pnpm
+
 # Create app directory
 WORKDIR /usr/src/app
 
 # Copy everything
 COPY . .
 
-# Install dependencies (bypass peer conflict)
-RUN npm install --legacy-peer-deps
+# Install dependencies using pnpm
+RUN pnpm install
 
 # Build the Flowise app
-RUN npm run build
+RUN pnpm run build
 
 # Make the run script executable
 RUN chmod +x packages/server/bin/run
 
-# Create missing log directory
+# Create required log directory
 RUN mkdir -p /opt/render/.flowise/logs
 
 # Expose the port
